@@ -1,0 +1,5 @@
+opentelemetry-exporter-otlp==1.20.0
+opentelemetry-instrumentation-django==v0.41b0
+opentelemetry-distro==v0.41b0
+Django
+uWSGI

@@ -1,0 +1,22 @@
+apiVersion: 1
+
+deleteDatasources:
+  - name: Tempo
+
+datasources:
+  - id: 1
+    uid: 5N2rB77Vz
+    orgId: 1
+    name: Tempo
+    type: tempo
+    typeName: Tempo
+    typeLogoUrl: public/app/plugins/datasource/tempo/img/tempo_logo.svg
+    access: proxy
+    url: http://tempo:3200
+    user: ""
+    database: ""
+    basicAuth: false
+    isDefault: true
+    readOnly: false
+    jsonData:
+      maxLines: 1000

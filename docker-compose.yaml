@@ -1,0 +1,49 @@
+version: "2"
+services:
+  faulty:
+    depends_on:
+      - otel-collector
+    build: ./service/faulty/.
+    command: opentelemetry-instrument uwsgi --http :8000 --module faulty.wsgi --master
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=faulty.settings
+      - OTEL_RESOURCE_ATTRIBUTES=service.name=faulty
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
+      - PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+      - OTEL_EXPORTER_OTLP_INSECURE=true
+
+  tempo:
+    image: grafana/tempo:latest
+    command: ["-config.file=/etc/tempo.yaml"]
+    ports:
+      - "3200:3200"
+      - "4317" # otlp grpc
+      - "4318" # otlp http
+      - "9411" # zipkin
+    volumes:
+      - ./config/tempo.yaml:/etc/tempo.yaml
+      - ./example-data/tempo:/tmp/tempo
+
+  otel-collector:
+    build: ./otel-collector/.
+    ports:
+      - "6831:6831"
+      - "14268:14268"
+      - "4317:4317"
+      - "4318:4318"
+    volumes:
+      - ./config/otel-collector.yaml:/config/otel-collector.yaml
+    command: /bin/otelcol --config=/config/otel-collector.yaml
+
+  grafana:
+    image: grafana/grafana:9.3.1
+    volumes:
+      - ./config/datasources/datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    ports:
+      - 3000:3000
